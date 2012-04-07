@@ -1,3 +1,4 @@
+require 'active_support/all'
 class SystemPay
   autoload :FormHelper, "system-pay/form_helper"
 
@@ -10,7 +11,7 @@ class SystemPay
   @@vads_ctx_mode = 'TEST' # or 'PRODUCTION'
   cattr_accessor :vads_ctx_mode  
   
-  @@vads_contrib = 'Rails3'
+  @@vads_contrib = 'Ruby'
   cattr_accessor :vads_contrib  
   
   @@vads_page_action = 'PAYMENT'
@@ -52,14 +53,18 @@ class SystemPay
   # Returns a new instance object
   def initialize args=nil
     args.each do |k,v|
-      instance_variable_set("@vads_#{k}", v) unless v.nil?
+      if k.to_s.match(/^vads_/)
+        instance_variable_set("@#{k}", v) if v.present? && respond_to?(k)
+      else
+        instance_variable_set("@vads_#{k}", v) if v.present? && respond_to?("vads_#{k}")
+      end
     end if args
     
     raise ArgumentError.new("You must specify a non blank :amount parameter") unless @vads_amount.present?
     raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless @vads_trans_id.present?    
     
     @vads_currency ||= '978' # Euros
-    @vads_trans_date = Time.now.strftime("%Y%m%d%H%M%S")
+    @vads_trans_date ||= Time.now.strftime("%Y%m%d%H%M%S")
     @vads_trans_id = @vads_trans_id.to_s.rjust(6, '0')
     
   end
@@ -74,6 +79,12 @@ class SystemPay
     Hash[sorted_array + [['signature', signature]]]
   end
   
+  # Public: Verify that the returned signature is valid. 
+  # Return boolean
+  def valid_signature?(return_signature)
+    signature == return_signature
+  end
+  
   
   private
   
@@ -86,7 +97,7 @@ class SystemPay
   end
   
   def sorted_array
-    (instance_variables_array + self.class.class_variables_array).sort
+    (instance_variables_array + self.class.class_variables_array).uniq.sort
   end
   
   def sorted_values

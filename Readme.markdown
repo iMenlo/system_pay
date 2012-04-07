@@ -50,7 +50,7 @@ or, in your Gemfile
 
       def bank_callback
         @system_pay = SystemPay.new(params)
-        if @system_pay.signature == params[:signature]
+        if @system_pay.valid_signature?(params[:signature])
         
           order_transaction = OrderTransaction.find_by_reference params[:reference], :last
           order = order_transaction.order

@@ -1,3 +1,3 @@
-module SystemPay
+class SystemPay
   VERSION = '0.0.1'
 end
