@@ -33,7 +33,7 @@ or, in your Gemfile
 
 ### in order controller :
 
-    helper :'paiement_cic/form'
+    helper :'system_pay/form'
     @system_pay = SystemPay.new(:amount => @order.amount_in_cents, :trans_id => @order.id)   
 
 ### in order view :
@@ -84,19 +84,6 @@ or, in your Gemfile
         end
         render :text => "Pragma: no-cache\nContent-type: text/plain\n\nversion=2\ncdr=#{receipt}"
       end
-
-      def bank_ok
-        @order_transaction = OrderTransaction.find params[:id]
-        @order = @order_transaction.order
-        @order.pay!
-      end
-
-      def bank_err
-        order_transaction = OrderTransaction.find params[:id]
-        order = order_transaction.order
-        order.cancel!
-      end
-    end
 
 
 ## Thanks
