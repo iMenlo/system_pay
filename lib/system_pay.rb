@@ -1,6 +1,6 @@
 require 'active_support/all'
 class SystemPay
-  autoload :FormHelper, "system-pay/form_helper"
+  autoload :FormHelper, "system_pay/form_helper"
 
   @@target_url = "https://paiement.systempay.fr/vads-payment/"
   cattr_accessor :target_url
