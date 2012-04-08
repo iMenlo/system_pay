@@ -20,7 +20,7 @@ class SystemPay
   @@vads_payment_config = 'SINGLE'
   cattr_accessor :vads_payment_config
   
-  @@vads_return_mode = 'POST'
+  @@vads_return_mode = 'GET'
   cattr_accessor :vads_return_mode
   
   @@vads_site_id = '123456' # change this value
