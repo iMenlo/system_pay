@@ -15,6 +15,8 @@ Gem::Specification.new do |s|
   s.homepage  = 'https://github.com/iMenlo/system_pay'
 
   s.add_development_dependency "active_support", "~> 3.0.0"
+  s.add_development_dependency 'rake', '~> 0.9.2'
+  s.add_development_dependency 'rspec', '~> 2.6.0' 
 
   # ensure the gem is built out of versioned files
   s.files         = `git ls-files`.split("\n")

@@ -29,6 +29,8 @@ or, in your Gemfile
 
     # Your production certificat
     SystemPay.certificat = '7193156219823756'	
+    # Set the production mode
+    SystemPay.vads_ctx_mode = 'PRODUCTION'	    
 
 
 ### in order controller :
