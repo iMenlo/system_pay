@@ -7,11 +7,11 @@ SystemPay is a gem to ease credit card payment with Natixis Paiements / Cyberplu
 
 ## INSTALL
 
-    gem install git@github.com:iMenlo/system_pay.git
+    gem install system_pay
 
 or, in your Gemfile
 
-    gem 'system_pay', :git => 'git://github.com/iMenlo/system_pay.git'
+    gem 'system_pay'
     
 ## USAGE
 
