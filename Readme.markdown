@@ -1,17 +1,17 @@
 # SystemPay
 
-SystemPay is a gem to ease credit card payment with Natixis Paiements / CyberplusPaiement (Credit du Nord) bank system. It's a Ruby on Rails port of the connexion kits published by the bank. 
+SystemPay is a gem to ease credit card payment with Natixis Paiements / CyberplusPaiement (Banque Populaire) bank system. It's a Ruby on Rails port of the connexion kits published by the bank. 
 
 * Gem Homepage : [site](http://github.com/iMenlo/system_pay)
 * Cyberplus SystemPay documentation : [site](https://systempay.cyberpluspaiement.com)
 
 ## INSTALL
 
-    gem install git@github.com:iMenlo/system_pay.git
+    gem install system_pay
 
 or, in your Gemfile
 
-    gem 'system_pay', :git => 'git://github.com/iMenlo/system_pay.git'
+    gem 'system_pay'
     
 ## USAGE
 
