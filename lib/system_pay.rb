@@ -64,7 +64,7 @@ class SystemPay
     raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless @vads_trans_id.present?    
     
     @vads_currency ||= '978' # Euros
-    @vads_trans_date ||= Time.now.strftime("%Y%m%d%H%M%S")
+    @vads_trans_date ||= Time.now.utc.strftime("%Y%m%d%H%M%S")
     @vads_trans_id = @vads_trans_id.to_s.rjust(6, '0')
     
   end
