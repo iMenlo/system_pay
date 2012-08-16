@@ -2,8 +2,8 @@
 
 SystemPay is a gem to ease credit card payment with Natixis Paiements / CyberplusPaiement (Banque Populaire) bank system. It's a Ruby on Rails port of the connexion kits published by the bank. 
 
-* Gem Homepage : [site](http://github.com/iMenlo/system_pay)
-* Cyberplus SystemPay documentation : [site](https://systempay.cyberpluspaiement.com)
+* Gem Homepage : [http://github.com/iMenlo/system_pay](http://github.com/iMenlo/system_pay)
+* Cyberplus SystemPay documentation : [https://systempay.cyberpluspaiement.com](https://systempay.cyberpluspaiement.com)
 
 ## INSTALL
 
@@ -15,28 +15,21 @@ or, in your Gemfile
     
 ## USAGE
 
-### in environment.rb :
+   Create a config yml data file to store your site_id and certificates values:
 
-    # Your vads_site_id
-    SystemPay.vads_site_id = '654927625'   
+### in config/system_pay.yml:
 
-### in development.rb :
-
-    # Your test certificat
-    SystemPay.certificat = '9123456299120752'	
+    development:
+      vads_site_id : '00000000'
+      certificat: '0000000000000000'
+    production:
+      vads_site_id : '00000000'
+      certificat: '0000000000000000'
+      vads_ctx_mode: PRODUCTION
   
-### in production.rb :
-
-    # Your production certificat
-    SystemPay.certificat = '7193156219823756'	
-    # Set the production mode
-    SystemPay.vads_ctx_mode = 'PRODUCTION'	    
-
-
 ### in order controller :
 
-    helper :'system_pay/form'
-    @system_pay = SystemPay.new(:amount => @order.amount_in_cents, :trans_id => @order.id)   
+    @system_pay = SystemPay::Vads.new(:amount => @order.amount_in_cents, :trans_id => @order.id)   
 
 ### in order view :
 
@@ -51,8 +44,8 @@ or, in your Gemfile
       protect_from_forgery :except => [:bank_callback]
 
       def bank_callback
-        @system_pay = SystemPay.new(params)
-        if @system_pay.valid_signature?(params[:signature])
+        @system_pay = SystemPay::Vads.new(params)
+        if SystemPay::Vads.valid_signature?(@system_pay.params)
         
           order_transaction = OrderTransaction.find_by_reference params[:reference], :last
           order = order_transaction.order
