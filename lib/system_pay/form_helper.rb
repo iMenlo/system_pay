@@ -1,3 +1,4 @@
+# encoding: UTF-8
 module SystemPay
   module FormHelper
     def system_pay_hidden_fields(system_pay)

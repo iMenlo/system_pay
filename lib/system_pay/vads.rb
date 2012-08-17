@@ -1,7 +1,58 @@
+# encoding: UTF-8
 module SystemPay
   class Vads
-    #autoload :FormHelper, "system_pay/form_helper"
-
+    # pre-defined messages (from 2.2 Guide)
+    VADS_RISK_CONTROL_RESULT = {
+      ''   => 'Pas de contrôle effectué.',
+      '00' => 'Tous les contrôles se sont déroulés avec succès.',
+      '02' => 'La carte a dépassé l’encours autorisé.',
+      '03' => 'La carte appartient à la liste grise du commerçant.',
+      '04' => 'Le pays d’émission de la carte appartient à la liste grise du commerçant ou le pays d’émission de la carte n’appartient pas à la liste blanche du commerçant.',
+      '05' => 'L’adresse IP appartient à la liste grise du commerçant.',
+      '07' => 'La carte appartient à la liste grise BIN du commerçant.',
+      '99' => 'Problème technique rencontré par le serveur lors du traitement d’un des contrôles locaux.',
+    }
+    VADS_QUERY_FORMAT_ERROR = {
+      '01' => 'vads_version',
+      '02' => 'vads_site_id',
+      '03' => 'vads_trans_id',
+      '04' => 'vads_trans_date',
+      '05' => 'vads_validation_mode',
+      '06' => 'vads_capture_delay',
+      '07' => 'vads_payment_config',
+      '08' => 'vads_payment_cards',
+      '09' => 'vads_amount',
+      '10' => 'vads_currency',
+      '11' => 'vads_ctx_mode',
+      '12' => 'vads_language',
+      '13' => 'vads_order_id',
+      '14' => 'vads_order_info',
+      '15' => 'vads_cust_email',
+      '16' => 'vads_cust_id',
+      '17' => 'vads_cust_title',
+      '18' => 'vads_cust_name',
+      '19' => 'vads_cust_address',
+      '20' => 'vads_cust_zip',
+      '21' => 'vads_cust_city',
+      '22' => 'vads_cust_country',
+      '23' => 'vads_cust_phone',
+      '24' => 'vads_url_success',
+      '25' => 'vads_url_refused',
+      '26' => 'vads_url_referral',
+      '27' => 'vads_url_cancel',
+      '28' => 'vads_url_return',
+      '29' => 'vads_url_error',
+      '31' => 'vads_contrib',
+      '32' => 'vads_theme_config',
+      '46' => 'vads_page_action',
+      '47' => 'vads_action_mode',
+      '48' => 'vads_return_mode',
+      '61' => 'vads_user_info',
+      '62' => 'vads_contracts',
+      '77' => 'vads_cust_cell_phone'
+    }
+    
+    # fixed params per shop are class variables
     @@target_url = "https://paiement.systempay.fr/vads-payment/"
     cattr_accessor :target_url
 
@@ -20,7 +71,7 @@ module SystemPay
     @@vads_payment_config = 'SINGLE'
     cattr_accessor :vads_payment_config
   
-    @@vads_return_mode = 'GET'
+    @@vads_return_mode = 'GET' # or 'POST'
     cattr_accessor :vads_return_mode
   
     @@vads_site_id = '000000'
@@ -33,15 +84,29 @@ module SystemPay
     cattr_accessor :vads_version
   
     @@certificat = '0000000000000000'
-    cattr_accessor :certificat  
-  
-    attr_accessor :vads_amount, :vads_available_languages, :vads_capture_delay, :vads_contracts, :vads_currency, :vads_cust_address, :vads_cust_cell_phone, 
-    :vads_cust_email, :vads_cust_id, :vads_cust_name, :vads_redirect_error_message, :vads_redirect_success_message, :vads_trans_date, :vads_trans_id, :vads_url_cancel, :vads_url_error, 
-    :vads_url_referral, :vads_url_refused, :vads_url_success
+    cattr_accessor :certificat
+    
+    @@vads_shop_name = ''
+    cattr_accessor :vads_shop_name
+
+    @@vads_shop_url = ''
+    cattr_accessor :vads_shop_url
+
+    # transaction parameters are instance variables
+    attr_accessor :vads_amount, :vads_available_languages, :vads_capture_delay, :vads_contracts, :vads_currency,
+      :vads_cust_address, :vads_cust_cell_phone, :vads_cust_city, :vads_cust_country, :vads_cust_email, :vads_cust_id,
+      :vads_cust_name, :vads_cust_phone, :vads_cust_title, :vads_cust_zip, :vads_cust_city,
+      :vads_language, :vads_order_id, :vads_order_info, :vads_order_info2, :vads_order_info3, :vads_payment_cards,
+      :vads_redirect_error_message, :vads_redirect_error_timeout,
+      :vads_redirect_success_message, :vads_redirect_success_timeout,
+      :vads_ship_to_city, :vads_ship_to_country, :vads_ship_to_name, :vads_ship_to_phone_num, :vads_ship_to_state,
+      :vads_ship_to_street, :vads_ship_to_street2, :vads_ship_to_zip, :vads_theme_config, :vads_trans_date, 
+      :vads_trans_id, :vads_url_cancel, :vads_url_error, :vads_url_referral, :vads_url_refused, :vads_url_success,
+      :vads_url_return
 
     # Public: Creation of new instance.
     #         
-    # args - The hash of systempay parameters as describe in the implementation 
+    # args - The hash of systempay parameters as described in the implementation 
     #        document. Note that each key should *not* contain the vads_ prefix.
     #        :amount - Should be in cents 
     #        :trans_id - Will be automatically padded with zeros
@@ -51,7 +116,7 @@ module SystemPay
     #   SystemPay::Vads.new(:amount => 100, :trans_id => 10, :url_return => 'http://mywebsite.com/return_url')
     #
     # Returns a new instance object
-    def initialize args=nil
+    def initialize(args=nil)
       args.each do |k,v|
         if k.to_s.match(/^vads_/)
           instance_variable_set("@#{k}", v) if v.present? && respond_to?(k)
@@ -68,12 +133,16 @@ module SystemPay
       @vads_trans_id = (@vads_trans_id % 900000).to_s.rjust(6, '0')
     end
 
-    # Public: Perform the signature of the request based on the parameters
+    # Public: Compute the signature of the request based on the parameters
+    #
+    # Returns the signature string
     def signature
       self.class.sign(sorted_values)
     end
   
-    # Public: Hash with parameters and value of the object
+    # Public: Hash with non-nil parameters (and value) and their signature
+    # 
+    # Returns a hash
     def params
       Hash[sorted_array + [['signature', signature]]]
     end
@@ -85,6 +154,55 @@ module SystemPay
       sign(vads_params) == params['signature']
     end
  
+    # Public: Diagnose result from returned params
+    #
+    # params - The hash of params returned by the bank.
+    #
+    # Returns a hash { :status => :error | :success | :canceled | :bad_params,
+    #                  :user_msg => "msg for user",
+    #                  :tech_msg => "msg for back-office" }
+    def self.diagnose(params)
+#      params.symbolize_keys!
+      if params[:vads_result].blank?
+        { :status => :bad_params,
+          :user_msg => 'Vous allez être redirigé vers la page d’accueil',
+          :tech_msg => 'vads_result est vide. Suspicion de tentative de fraude.' }
+      elsif !valid_signature?(params)
+        { :status => :bad_params, 
+          :user_msg => 'Vous allez être redirigé vers la page d’accueil',
+          :tech_msg => 'La signature ne correspond pas. Suspicion de tentative de fraude.' }
+      else case params[:vads_result]
+        when '00'
+          { :status => :success,
+            :user_msg => 'Votre paiement a été accepté par la banque.',
+            :tech_msg => "Paiement accepté. #{VADS_RISK_CONTROL_RESULT[params[:vads_extra_result]]}" }
+        when '02'
+          { :status => :error,
+            :user_msg => 'Nous devons entrer en relation avec votre banque avant d’obtenir confirmation du paiement.',
+            :tech_msg => 'Le commerçant doit contacter la banque du porteur.' }
+        when '05'
+          { :status => :error,
+            :user_msg => 'Le paiement a été refusé par la banque.',
+            :tech_msg => "Paiement refusé par la banque. #{VADS_RISK_CONTROL_RESULT[params[:vads_extra_result]]}" }
+        when '17'
+          { :status => :canceled,
+            :user_msg => 'Vous avez annulé votre paiement.',
+            :tech_msg => 'Paiement annulé par le client.' }
+        when '30'
+          { :status => :bad_params,
+            :user_msg => 'En raison d’une erreur technique, le paiement n’a pu être validé.',
+            :tech_msg => "Erreur de format dans la requête (champ #{VADS_QUERY_FORMAT_ERROR[params[:vads_extra_result]]}). Signaler au développeur." }
+        when '96'
+          { :status => :bad_params,
+            :user_msg => 'En raison d’une erreur technique, le paiement n’a pu être validé.',
+            :tech_msg => 'Code vads_result inconnu. Signaler au développeur.' }
+        else
+          { :status => :bad_params,
+            :user_msg => 'En raison d’une erreur technique, le paiement n’a pu être validé.',
+            :tech_msg => 'Code vads_result inconnu. Signaler au développeur.' }
+        end
+      end
+    end
   
   private
 
@@ -101,7 +219,7 @@ module SystemPay
     end
   
     def sorted_array
-      (instance_variables_array + self.class.class_variables_array).uniq.sort
+      (instance_variables_array.compact + self.class.class_variables_array).uniq.sort
     end
   
     def sorted_values
