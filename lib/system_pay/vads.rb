@@ -71,7 +71,7 @@ module SystemPay
     @@vads_payment_config = 'SINGLE'
     cattr_accessor :vads_payment_config
   
-    @@vads_return_mode = 'GET' # or 'POST'
+    @@vads_return_mode = 'POST' # or 'GET', but request in GET could be too large
     cattr_accessor :vads_return_mode
   
     @@vads_site_id = '000000'
