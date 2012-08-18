@@ -150,7 +150,7 @@ module SystemPay
     # Public: Verify that the returned signature is valid. 
     # Return boolean
     def self.valid_signature?(params)
-      vads_params = params.sort.select{|value| value[0].match(/^vads_/)}.map{|value| value[1]}
+      vads_params = params.stringify_keys.sort.select{|value| value[0].match(/^vads_/)}.map{|value| value[1]}
       sign(vads_params) == params['signature']
     end
  
@@ -162,7 +162,6 @@ module SystemPay
     #                  :user_msg => "msg for user",
     #                  :tech_msg => "msg for back-office" }
     def self.diagnose(params)
-#      params.symbolize_keys!
       if params[:vads_result].blank?
         { :status => :bad_params,
           :user_msg => 'Vous allez être redirigé vers la page d’accueil',
@@ -211,7 +210,7 @@ module SystemPay
     end   
   
     def instance_variables_array
-      instance_variables.map { |name| [name[1..-1], instance_variable_get(name)] }
+      instance_variables.map { |name| v = instance_variable_get(name) ; v.nil? ? nil : [name[1..-1], v] }.compact
     end  
   
     def self.class_variables_array
@@ -219,7 +218,7 @@ module SystemPay
     end
   
     def sorted_array
-      (instance_variables_array.compact + self.class.class_variables_array).uniq.sort
+      (instance_variables_array + self.class.class_variables_array).uniq.sort
     end
   
     def sorted_values

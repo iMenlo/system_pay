@@ -32,10 +32,13 @@ or, in your Gemfile
       vads_shop_name: 'My shop'
       vads_shop_url: 'www.example.com'
       vads_ctx_mode: PRODUCTION
+      
+    # NB: you can place here any of the class variables
   
 ### in order controller :
 
-    @system_pay = SystemPay::Vads.new(:amount => @order.amount_in_cents, :trans_id => @order.id)   
+    @system_pay = SystemPay::Vads.new(:amount => @order.amount_in_cents, :trans_id => @order.id)
+    # NB: nil instance variables are ignored (not transmitted to the bank server)
 
 ### in order view :
 
