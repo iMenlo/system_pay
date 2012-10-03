@@ -104,7 +104,13 @@ class SystemPay
   end
   
   def sorted_array
-    (instance_variables_array + self.class.class_variables_array).uniq.sort
+    class_variables_hash = Hash[*self.class.class_variables_array.flatten(1)]
+    instance_variables_hash = Hash[*instance_variables_array.flatten(1)]
+    
+    names = (class_variables_hash.keys + instance_variables_hash.keys).uniq.sort
+    names.map do |name|
+      [name, instance_variables_hash[name] || class_variables_hash[name]]
+    end
   end
   
   def sorted_values
