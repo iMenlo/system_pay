@@ -37,7 +37,7 @@ class SystemPay
   
   attr_accessor :vads_amount, :vads_available_languages, :vads_capture_delay, :vads_contracts, :vads_currency, :vads_cust_address, :vads_cust_cell_phone, 
   :vads_cust_email, :vads_cust_id, :vads_cust_name, :vads_redirect_error_message, :vads_redirect_success_message, :vads_trans_date, :vads_trans_id, :vads_url_cancel, :vads_url_error, 
-  :vads_url_referral, :vads_url_refused, :vads_url_success
+  :vads_url_referral, :vads_url_refused, :vads_url_success, :vads_return_mode
 
   # Public: Creation of new instance.
   #         
