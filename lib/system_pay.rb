@@ -67,6 +67,8 @@ class SystemPay
     @vads_trans_date ||= Time.now.utc.strftime("%Y%m%d%H%M%S")
     @vads_trans_id = @vads_trans_id.to_s.rjust(6, '0')
     
+    raise ArgumentError.new("Invalid trans_id: #{@vads_trans_id.inspect}") unless @vads_trans_id =~ /\A[0-8][0-9]{5}\Z/
+    
   end
 
   # Public: Perform the signature of the request based on the parameters
