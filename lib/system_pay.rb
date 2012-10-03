@@ -32,8 +32,8 @@ class SystemPay
   @@vads_version = 'V2'
   cattr_accessor :vads_version
   
-  @@certificat = '1122334455667788'
-  cattr_accessor :certificat  
+  @@certificate = '1122334455667788'
+  cattr_accessor :certificate
   
   attr_accessor :vads_amount, :vads_available_languages, :vads_capture_delay, :vads_contracts, :vads_currency, :vads_cust_address, :vads_cust_cell_phone, 
   :vads_cust_email, :vads_cust_id, :vads_cust_name, :vads_redirect_error_message, :vads_redirect_success_message, :vads_trans_date, :vads_trans_id, :vads_url_cancel, :vads_url_error, 
@@ -92,7 +92,7 @@ class SystemPay
   private
 
   def self.sign(values)
-    Digest::SHA1.hexdigest((values+[certificat]).join("+"))
+    Digest::SHA1.hexdigest((values+[certificate]).join("+"))
   end   
   
   def instance_variables_array

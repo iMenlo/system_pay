@@ -22,13 +22,13 @@ or, in your Gemfile
 
 ### in development.rb :
 
-    # Your test certificat
-    SystemPay.certificat = '9123456299120752'	
+    # Your test certificate
+    SystemPay.certificate = '9123456299120752'	
   
 ### in production.rb :
 
-    # Your production certificat
-    SystemPay.certificat = '7193156219823756'	
+    # Your production certificate
+    SystemPay.certificate = '7193156219823756'	
     # Set the production mode
     SystemPay.vads_ctx_mode = 'PRODUCTION'	    
 
