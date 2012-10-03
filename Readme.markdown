@@ -51,8 +51,7 @@ or, in your Gemfile
       protect_from_forgery :except => [:bank_callback]
 
       def bank_callback
-        @system_pay = SystemPay.new(params)
-        if @system_pay.valid_signature?(params[:signature])
+        if SystemPay.valid_signature?(params)
         
           order_transaction = OrderTransaction.find_by_reference params[:reference], :last
           order = order_transaction.order
