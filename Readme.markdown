@@ -22,13 +22,13 @@ or, in your Gemfile
 
 ### in development.rb :
 
-    # Your test certificat
-    SystemPay.certificat = '9123456299120752'	
+    # Your test certificate
+    SystemPay.certificate = '9123456299120752'	
   
 ### in production.rb :
 
-    # Your production certificat
-    SystemPay.certificat = '7193156219823756'	
+    # Your production certificate
+    SystemPay.certificate = '7193156219823756'	
     # Set the production mode
     SystemPay.vads_ctx_mode = 'PRODUCTION'	    
 
@@ -51,8 +51,7 @@ or, in your Gemfile
       protect_from_forgery :except => [:bank_callback]
 
       def bank_callback
-        @system_pay = SystemPay.new(params)
-        if @system_pay.valid_signature?(params[:signature])
+        if SystemPay.valid_signature?(params)
         
           order_transaction = OrderTransaction.find_by_reference params[:reference], :last
           order = order_transaction.order

@@ -32,12 +32,18 @@ class SystemPay
   @@vads_version = 'V2'
   cattr_accessor :vads_version
   
-  @@certificat = '1122334455667788'
-  cattr_accessor :certificat  
+  @@certificate = '1122334455667788'
+  cattr_accessor :certificate
+  
+  # Backward compatibility
+  class << self
+    alias_method :certificat, :certificate
+    alias_method :certificat=, :certificate=
+  end
   
   attr_accessor :vads_amount, :vads_available_languages, :vads_capture_delay, :vads_contracts, :vads_currency, :vads_cust_address, :vads_cust_cell_phone, 
   :vads_cust_email, :vads_cust_id, :vads_cust_name, :vads_redirect_error_message, :vads_redirect_success_message, :vads_trans_date, :vads_trans_id, :vads_url_cancel, :vads_url_error, 
-  :vads_url_referral, :vads_url_refused, :vads_url_success
+  :vads_url_referral, :vads_url_refused, :vads_url_success, :vads_return_mode, :vads_language, :vads_order_id, :vads_shop_name, :vads_shop_url
 
   # Public: Creation of new instance.
   #         
@@ -67,6 +73,8 @@ class SystemPay
     @vads_trans_date ||= Time.now.utc.strftime("%Y%m%d%H%M%S")
     @vads_trans_id = @vads_trans_id.to_s.rjust(6, '0')
     
+    raise ArgumentError.new("Invalid trans_id: #{@vads_trans_id.inspect}") unless @vads_trans_id =~ /\A[0-8][0-9]{5}\Z/
+    
   end
 
   # Public: Perform the signature of the request based on the parameters
@@ -90,7 +98,7 @@ class SystemPay
   private
 
   def self.sign(values)
-    Digest::SHA1.hexdigest((values+[certificat]).join("+"))
+    Digest::SHA1.hexdigest((values+[certificate]).join("+"))
   end   
   
   def instance_variables_array
@@ -102,7 +110,13 @@ class SystemPay
   end
   
   def sorted_array
-    (instance_variables_array + self.class.class_variables_array).uniq.sort
+    class_variables_hash = Hash[*self.class.class_variables_array.flatten(1)]
+    instance_variables_hash = Hash[*instance_variables_array.flatten(1)]
+    
+    names = (class_variables_hash.keys + instance_variables_hash.keys).uniq.sort
+    names.map do |name|
+      [name, instance_variables_hash[name] || class_variables_hash[name]]
+    end
   end
   
   def sorted_values
