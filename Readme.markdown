@@ -2,8 +2,8 @@
 
 SystemPay is a gem to ease credit card payment with Natixis Paiements / CyberplusPaiement (Banque Populaire) bank system. It's a Ruby on Rails port of the connexion kits published by the bank. 
 
-* Gem Homepage : [site](http://github.com/iMenlo/system_pay)
-* Cyberplus SystemPay documentation : [site](https://systempay.cyberpluspaiement.com)
+* Gem Homepage : [http://github.com/iMenlo/system_pay](http://github.com/iMenlo/system_pay)
+* Cyberplus SystemPay documentation : [https://systempay.cyberpluspaiement.com](https://systempay.cyberpluspaiement.com)
 
 ## INSTALL
 
@@ -15,28 +15,30 @@ or, in your Gemfile
     
 ## USAGE
 
-### in environment.rb :
+   Create a config yml data file to store your site_id and certificates values:
 
-    # Your vads_site_id
-    SystemPay.vads_site_id = '654927625'   
+### in config/system_pay.yml:
 
-### in development.rb :
-
-    # Your test certificat
-    SystemPay.certificat = '9123456299120752'	
+    development:
+      vads_site_id: '00000000'
+      certificat: '0000000000000000'
+      vads_validation_mode: 1
+      vads_shop_name: 'My shop'
+      vads_shop_url: 'www.example.com'
+    production:
+      vads_site_id: '00000000'
+      certificat: '0000000000000000'
+      vads_validation_mode: 0
+      vads_shop_name: 'My shop'
+      vads_shop_url: 'www.example.com'
+      vads_ctx_mode: PRODUCTION
+      
+    # NB: you can place here any of the class variables
   
-### in production.rb :
-
-    # Your production certificat
-    SystemPay.certificat = '7193156219823756'	
-    # Set the production mode
-    SystemPay.vads_ctx_mode = 'PRODUCTION'	    
-
-
 ### in order controller :
 
-    helper :'system_pay/form'
-    @system_pay = SystemPay.new(:amount => @order.amount_in_cents, :trans_id => @order.id)   
+    @system_pay = SystemPay::Vads.new(:amount => @order.amount_in_cents, :trans_id => @order.id)
+    # NB: nil instance variables are ignored (not transmitted to the bank server)
 
 ### in order view :
 
@@ -51,42 +53,49 @@ or, in your Gemfile
       protect_from_forgery :except => [:bank_callback]
 
       def bank_callback
-        @system_pay = SystemPay.new(params)
-        if @system_pay.valid_signature?(params[:signature])
-        
-          order_transaction = OrderTransaction.find_by_reference params[:reference], :last
-          order = order_transaction.order
-
-          return_code = params['vads_result']
-
-          if return_code == "Annulation"
-            order.cancel!
-            order.update_attribute :description, "Paiement refusé par la banque."
-
-          elsif return_code == "payetest"
-            order.pay!
-            order.update_attribute :description, "TEST accepté par la banque."
-            order_transaction.update_attribute :test, true
-
-          elsif return_code == "00"
-            order.pay!
-            order.update_attribute :description, "Paiement accepté par la banque."
-            order_transaction.update_attribute :test, false
-          end
-
-          order_transaction.update_attribute :success, true
-      
-          receipt = "0"
+        @transaction = Transaction.where(:order_id => params[:vads_order_id], :state => ['sent', 'ready']).first if params[:vads_order_id] =~ /^[\d-]+$/
+        unless @transaction
+          logger.info "bank_callback ignored: no transaction matching order_id '#{params[:vads_order_id]}'."
         else
-          order.transaction_declined!
-          order.update_attribute :description, "Document Falsifie."
-          order_transaction.update_attribute :success, false
+          # store whatever returned parameters you need, at least the payment_certificate:
+          @transaction.payment_certificate  = params[:vads_payment_certificate]
+          @transaction.result               = params[:vads_result].to_i
+          @transaction.auth_result          = params[:vads_auth_result].to_i
+          @transaction.extra_result         = params[:vads_extra_result].to_i
+          @transaction.warranty_result      = params[:vads_warranty_result]
+          @transaction.card_brand           = params[:vads_card_brand]
+          begin
+            @transaction.expiry_date        = DateTime.new(params[:vads_expiry_year].to_i, params[:vads_expiry_month].to_i, 1)
+          rescue
+            @transaction.expiry_date        = DateTime.now
+          end
+          
+          # or store all returned parameters as text:
+          @transaction.returned_params      = params.to_a.sort.map{|k,v| "#{k}: #{v}"}.join("\n")
 
-          receipt = "1\n#{PaiementCic.mac_string}"
+          # get transaction result
+          @result = SystemPay::Vads.diagnose(params)
+
+          # store
+          @transaction.tech_msg = @result[:tech_msg]
+          @transaction.user_msg  = @result[:user_msg]
+          @transaction.save
+
+          # change state
+          case @result[:status]
+          when :success
+            @transaction.success!
+          when :cancel
+            @transaction.cancel!    
+          when :error
+            @transaction.error!  
+          when :bad_params
+            @transaction.error!
+          end
         end
-        render :text => "Pragma: no-cache\nContent-type: text/plain\n\nversion=2\ncdr=#{receipt}"
-      end
 
+        render :text => "Pragma: no-cache\nContent-type: text/plain\n\nversion=V2\nOK" 
+      end
 
 ## Thanks
 
