@@ -151,7 +151,7 @@ module SystemPay
     # Return boolean
     def self.valid_signature?(params)
       vads_params = params.sort.select{|value| value[0].to_s.match(/^vads_/)}.map{|value| value[1]}
-      sign(vads_params) == params[:signature]
+      sign(vads_params) == params['signature']
     end
  
     # Public: Diagnose result from returned params
