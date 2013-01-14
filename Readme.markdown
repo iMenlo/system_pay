@@ -1,6 +1,6 @@
 # SystemPay
 
-SystemPay is a gem to ease credit card payment with Natixis Paiements / CyberplusPaiement (Banque Populaire) bank system. It's a Ruby on Rails port of the connexion kits published by the bank. 
+SystemPay is a gem to ease credit card payment with Natixis Paiements / CyberplusPaiement (Banque Populaire) bank system. It's a Ruby on Rails port of the connexion kits published by the bank.
 
 * Gem Homepage : [http://github.com/iMenlo/system_pay](http://github.com/iMenlo/system_pay)
 * Cyberplus SystemPay documentation : [https://systempay.cyberpluspaiement.com](https://systempay.cyberpluspaiement.com)
@@ -12,7 +12,7 @@ SystemPay is a gem to ease credit card payment with Natixis Paiements / Cyberplu
 or, in your Gemfile
 
     gem 'system_pay'
-    
+
 ## USAGE
 
    Create a config yml data file to store your site_id and certificates values:
@@ -25,6 +25,12 @@ or, in your Gemfile
       vads_validation_mode: 1
       vads_shop_name: 'My shop'
       vads_shop_url: 'www.example.com'
+    test:
+      vads_site_id: '00000000'
+      certificat: '0000000000000000'
+      vads_validation_mode: 1
+      vads_shop_name: 'My shop'
+      vads_shop_url: 'www.example.com'
     production:
       vads_site_id: '00000000'
       certificat: '0000000000000000'
@@ -32,9 +38,9 @@ or, in your Gemfile
       vads_shop_name: 'My shop'
       vads_shop_url: 'www.example.com'
       vads_ctx_mode: PRODUCTION
-      
+
     # NB: you can place here any of the class variables
-  
+
 ### in order controller :
 
     @system_pay = SystemPay::Vads.new(:amount => @order.amount_in_cents, :trans_id => @order.id)
@@ -69,7 +75,7 @@ or, in your Gemfile
           rescue
             @transaction.expiry_date        = DateTime.now
           end
-          
+
           # or store all returned parameters as text:
           @transaction.returned_params      = params.to_a.sort.map{|k,v| "#{k}: #{v}"}.join("\n")
 
@@ -86,15 +92,15 @@ or, in your Gemfile
           when :success
             @transaction.success!
           when :cancel
-            @transaction.cancel!    
+            @transaction.cancel!
           when :error
-            @transaction.error!  
+            @transaction.error!
           when :bad_params
             @transaction.error!
           end
         end
 
-        render :text => "Pragma: no-cache\nContent-type: text/plain\n\nversion=V2\nOK" 
+        render :text => "Pragma: no-cache\nContent-type: text/plain\n\nversion=V2\nOK"
       end
 
 ## Thanks
@@ -103,4 +109,3 @@ This gem is inspired by Novelys [paiement_cic](http://github.com/novelys/paiemen
 
 ## License
 Copyright (c) 2012 iMenlo Team, released under the MIT license
-    
