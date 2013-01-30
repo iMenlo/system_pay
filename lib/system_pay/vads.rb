@@ -49,6 +49,12 @@ module SystemPay
       '48' => 'vads_return_mode',
       '61' => 'vads_user_info',
       '62' => 'vads_contracts',
+      '64' => 'vads_sub_desc',
+      '65' => 'vads_sub_amount',
+      '67' => 'vads_sub_currency',
+      '66' => 'vads_sub_init_amount',
+      '68' => 'vads_sub_init_amount_number',
+      '69' => 'vads_sub_effect_date',
       '77' => 'vads_cust_cell_phone',
       '104' => 'vads_cust_first_name',
       '105' => 'vads_cust_last_name'
@@ -104,7 +110,9 @@ module SystemPay
       :vads_ship_to_city, :vads_ship_to_country, :vads_ship_to_name, :vads_ship_to_phone_num, :vads_ship_to_state,
       :vads_ship_to_street, :vads_ship_to_street2, :vads_ship_to_zip, :vads_theme_config, :vads_trans_date,
       :vads_trans_id, :vads_url_cancel, :vads_url_error, :vads_url_referral, :vads_url_refused, :vads_url_success,
-      :vads_url_return, :vads_cust_first_name, :vads_cust_last_name
+      :vads_url_return, :vads_cust_first_name, :vads_cust_last_name, :vads_sub_desc, :vads_sub_init_amount,
+      :vads_sub_init_amount_number, :vads_sub_amount, :vads_sub_currency, :vads_sub_effect_date
+
 
     # Public: Creation of new instance.
     #
@@ -127,7 +135,7 @@ module SystemPay
         end
       end if args
 
-      raise ArgumentError.new("You must specify a non blank :amount parameter") unless @vads_amount.present?
+      raise ArgumentError.new("You must specify a non blank :amount parameter") unless (@vads_amount.present?)
       raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless @vads_trans_id.present?
 
       @vads_currency ||= '978' # Euros
