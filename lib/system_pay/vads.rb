@@ -49,7 +49,9 @@ module SystemPay
       '48' => 'vads_return_mode',
       '61' => 'vads_user_info',
       '62' => 'vads_contracts',
-      '77' => 'vads_cust_cell_phone'
+      '77' => 'vads_cust_cell_phone',
+      '104' => 'vads_cust_first_name',
+      '105' => 'vads_cust_last_name'
     }
 
     # fixed params per shop are class variables
@@ -102,7 +104,7 @@ module SystemPay
       :vads_ship_to_city, :vads_ship_to_country, :vads_ship_to_name, :vads_ship_to_phone_num, :vads_ship_to_state,
       :vads_ship_to_street, :vads_ship_to_street2, :vads_ship_to_zip, :vads_theme_config, :vads_trans_date,
       :vads_trans_id, :vads_url_cancel, :vads_url_error, :vads_url_referral, :vads_url_refused, :vads_url_success,
-      :vads_url_return
+      :vads_url_return, :vads_cust_first_name, :vads_cust_last_name
 
     # Public: Creation of new instance.
     #
