@@ -44,6 +44,7 @@ module SystemPay
       '29' => 'vads_url_error',
       '31' => 'vads_contrib',
       '32' => 'vads_theme_config',
+      '34' => 'vads_redirect_success_timeout',
       '46' => 'vads_page_action',
       '47' => 'vads_action_mode',
       '48' => 'vads_return_mode',
