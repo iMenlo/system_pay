@@ -5,11 +5,11 @@ require 'rails'
 module SystemPay
   class Railtie < ::Rails::Railtie
     initializer "system_pay.form_helper" do
-      ActiveSupport.on_load(:action_controller) do 
+      ActiveSupport.on_load(:action_controller) do
         helper SystemPay::FormHelper
       end
 
-=begin      
+=begin
       config.to_prepare do
         self.setup! # &method(:activate).to_proc
       end
