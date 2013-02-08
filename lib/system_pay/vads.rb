@@ -51,41 +51,41 @@ module SystemPay
       '62' => 'vads_contracts',
       '77' => 'vads_cust_cell_phone'
     }
-    
+
     # fixed params per shop are class variables
     @@target_url = "https://paiement.systempay.fr/vads-payment/"
     cattr_accessor :target_url
 
     @@vads_action_mode = 'INTERACTIVE'
     cattr_accessor :vads_action_mode
-  
+
     @@vads_ctx_mode = 'TEST' # or 'PRODUCTION'
-    cattr_accessor :vads_ctx_mode  
-  
+    cattr_accessor :vads_ctx_mode
+
     @@vads_contrib = 'Ruby'
-    cattr_accessor :vads_contrib  
-  
+    cattr_accessor :vads_contrib
+
     @@vads_page_action = 'PAYMENT'
     cattr_accessor :vads_page_action
-  
+
     @@vads_payment_config = 'SINGLE'
     cattr_accessor :vads_payment_config
-  
+
     @@vads_return_mode = 'POST' # or 'GET', but request in GET could be too large
     cattr_accessor :vads_return_mode
-  
+
     @@vads_site_id = '000000'
-    cattr_accessor :vads_site_id  
-  
+    cattr_accessor :vads_site_id
+
     @@vads_validation_mode = '1'
-    cattr_accessor :vads_validation_mode  
-  
+    cattr_accessor :vads_validation_mode
+
     @@vads_version = 'V2'
     cattr_accessor :vads_version
-  
+
     @@certificat = '0000000000000000'
     cattr_accessor :certificat
-    
+
     @@vads_shop_name = ''
     cattr_accessor :vads_shop_name
 
@@ -100,19 +100,19 @@ module SystemPay
       :vads_redirect_error_message, :vads_redirect_error_timeout,
       :vads_redirect_success_message, :vads_redirect_success_timeout,
       :vads_ship_to_city, :vads_ship_to_country, :vads_ship_to_name, :vads_ship_to_phone_num, :vads_ship_to_state,
-      :vads_ship_to_street, :vads_ship_to_street2, :vads_ship_to_zip, :vads_theme_config, :vads_trans_date, 
+      :vads_ship_to_street, :vads_ship_to_street2, :vads_ship_to_zip, :vads_theme_config, :vads_trans_date,
       :vads_trans_id, :vads_url_cancel, :vads_url_error, :vads_url_referral, :vads_url_refused, :vads_url_success,
       :vads_url_return
 
     # Public: Creation of new instance.
-    #         
-    # args - The hash of systempay parameters as described in the implementation 
+    #
+    # args - The hash of systempay parameters as described in the implementation
     #        document. Note that each key should *not* contain the vads_ prefix.
-    #        :amount - Should be in cents 
+    #        :amount - Should be in cents
     #        :trans_id - Will be automatically padded with zeros
     #
     # Examples
-    # 
+    #
     #   SystemPay::Vads.new(:amount => 100, :trans_id => 10, :url_return => 'http://mywebsite.com/return_url')
     #
     # Returns a new instance object
@@ -124,10 +124,10 @@ module SystemPay
           instance_variable_set("@vads_#{k}", v) if v.present? && respond_to?("vads_#{k}")
         end
       end if args
-    
+
       raise ArgumentError.new("You must specify a non blank :amount parameter") unless @vads_amount.present?
-      raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless @vads_trans_id.present?    
-    
+      raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless @vads_trans_id.present?
+
       @vads_currency ||= '978' # Euros
       @vads_trans_date ||= Time.now.utc.strftime("%Y%m%d%H%M%S")
       @vads_trans_id = (@vads_trans_id % 900000).to_s.rjust(6, '0')
@@ -139,21 +139,21 @@ module SystemPay
     def signature
       self.class.sign(sorted_values)
     end
-  
+
     # Public: Hash with non-nil parameters (and value) and their signature
-    # 
+    #
     # Returns a hash
     def params
       Hash[sorted_array + [['signature', signature]]]
     end
-  
-    # Public: Verify that the returned signature is valid. 
+
+    # Public: Verify that the returned signature is valid.
     # Return boolean
     def self.valid_signature?(params)
       vads_params = params.sort.select{|value| value[0].to_s.match(/^vads_/)}.map{|value| value[1]}
       sign(vads_params) == params['signature']
     end
- 
+
     # Public: Diagnose result from returned params
     #
     # params - The hash of params returned by the bank.
@@ -167,7 +167,7 @@ module SystemPay
           :user_msg => 'Vous allez être redirigé vers la page d’accueil',
           :tech_msg => 'vads_result est vide. Suspicion de tentative de fraude.' }
       elsif !valid_signature?(params)
-        { :status => :bad_params, 
+        { :status => :bad_params,
           :user_msg => 'Vous allez être redirigé vers la page d’accueil',
           :tech_msg => 'La signature ne correspond pas. Suspicion de tentative de fraude.' }
       else case params[:vads_result]
@@ -202,28 +202,28 @@ module SystemPay
         end
       end
     end
-  
+
   private
 
     def self.sign(values)
       Digest::SHA1.hexdigest((values+[certificat]).join("+"))
-    end   
-  
+    end
+
     def instance_variables_array
       instance_variables.map { |name| v = instance_variable_get(name) ; v.nil? ? nil : [name[1..-1], v] }.compact
-    end  
-  
-    def self.class_variables_array
-      class_variables.select{|name| name.match(/^@@vads_/)}.map { |name| [name[2..-1], class_variable_get(name)] }  
     end
-  
+
+    def self.class_variables_array
+      class_variables.select{|name| name.match(/^@@vads_/)}.map { |name| [name[2..-1], class_variable_get(name)] }
+    end
+
     def sorted_array
       (instance_variables_array + self.class.class_variables_array).uniq.sort
     end
-  
+
     def sorted_values
       sorted_array.map{|value| value[1]}
-    end  
+    end
 
   end
 end
