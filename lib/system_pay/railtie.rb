@@ -17,7 +17,7 @@ module SystemPay
 
       system_pay_config_file = File.join(Rails.root,'config','system_pay.yml')
       raise "#{system_pay_config_file} is missing!" unless File.exists? system_pay_config_file
-      system_pay_config = YAML.load_file(system_pay_config_file)[Rails.env].symbolize_keys
+      system_pay_config = YAML.load(ERB.new(IO.read(system_pay_config_file)).result)[Rails.env].symbolize_keys
 
       system_pay_config.each_pair do |n, v|
         SystemPay::Vads.class_variable_set("@@#{n}", v)
